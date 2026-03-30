@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>EchoMind Ai · AI Communication</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"
+    media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" type="image/png" href="ic_launcher.png" />
+</head>
+
+<body>
+
+  <div class="blink-flash" id="blink-flash"></div>
+  <div class="notif" id="notif"></div>
+
+
+
+  <!-- SOS Overlay -->
+  <div class="sos-overlay" id="sos-overlay">
+    <div class="sos-title">🆘 SOS</div>
+    <div class="sos-sub" id="sos-sub">Alerting caregiver…</div>
+    <div class="sos-countdown" id="sos-countdown"></div>
+    <button class="sos-cancel" onclick="cancelSOS()">Blink or Tap to Cancel</button>
+  </div>
+
+  <!-- Pause Overlay -->
+  <div class="pause-overlay" id="pause-overlay">
+    <div class="pause-icon">😌</div>
+    <div class="pause-title">Paused</div>
+    <div class="pause-sub">Hold smile 5s to toggle · single blink or tap to resume</div>
+    <button class="pause-resume-btn" onclick="resumeApp()">▶ Resume</button>
+  </div>
+
+  <!-- ══ SCREEN 1: LOADING ══ -->
+  <div class="screen active" id="s-loading">
+    <img src="ic_launcher.png" class="brand-logo" alt="EchoMind Ai Logo" />
+    <div class="brand-name">EchoMind <em>Ai</em></div>
+    <div class="brand-tagline">Voice for Every Soul</div>
+    <div class="load-track">
+      <div class="load-fill" id="load-fill"></div>
+    </div>
+    <div class="load-label" id="load-label">Starting…</div>
+    <span class="skip-link" onclick="skipCamera()">Skip camera — keyboard mode</span>
+  </div>
+
+  <!-- ══ SCREEN 2: ONBOARDING ══ -->
+  <div class="screen" id="s-onboard">
+    <div class="ob-card">
+      <div class="ob-prog" id="ob-prog"></div>
+      <div class="ob-step active" id="ob-0">
+        <div class="ob-icon">✦</div>
+        <div class="ob-h">EchoMind Ai</div>
+        <div class="ob-p">An AI twin that learns how <em>this person</em> thinks, speaks, and feels — making every blink
+          count.</div>
+        <div class="ob-p" style="font-size:11px;color:var(--faint)">This 5-step setup is for caregivers. Takes ~2
+          minutes.</div>
+        <div class="ob-nav" style="justify-content:center"><button class="ob-btn" onclick="obNext()">Begin Setup
+            →</button></div>
+      </div>
+      <div class="ob-step" id="ob-1">
+        <div class="ob-icon">👤</div>
+        <div class="ob-h">Who are we helping?</div>
+        <div class="ob-label">Full Name</div>
+        <input class="ob-input" id="ob-name" placeholder="e.g. Arjun Sharma" oninput="updateTwinPreview()" />
+        <div class="ob-row">
+          <div style="flex:1">
+            <div class="ob-label">Age</div><input class="ob-input" id="ob-age" type="number" placeholder="54"
+              oninput="updateTwinPreview()" />
+          </div>
+          <div style="flex:1">
+            <div class="ob-label">ALS Stage</div>
+            <select class="ob-input" id="ob-stage">
+              <option value="early">Early — some speech</option>
+              <option value="moderate" selected>Moderate — no speech</option>
+              <option value="advanced">Advanced — eye/face only</option>
+            </select>
+          </div>
+        </div>
+        <div class="ob-nav"><button class="ob-skip" onclick="obBack()">← Back</button><button class="ob-btn"
+            onclick="obNext()">Next →</button></div>
+      </div>
+      <div class="ob-step" id="ob-2">
+        <div class="ob-icon">❤</div>
+        <div class="ob-h">Key People</div>
+        <div class="ob-p">The AI twin references these people naturally in every suggestion.</div>
+        <div id="rel-list">
+          <div class="rel-entry"><input placeholder="Name (e.g. Priya)" class="rel-name" /><input
+              placeholder="Relation (e.g. daughter)" class="rel-role" /></div>
+          <div class="rel-entry"><input placeholder="Name (e.g. Dr. Mehta)" class="rel-name" /><input
+              placeholder="Relation (e.g. doctor)" class="rel-role" /></div>
+        </div>
+        <button class="rel-add" onclick="addRel()">+ Add person</button>
+        <div class="ob-nav"><button class="ob-skip" onclick="obBack()">← Back</button><button class="ob-btn"
+            onclick="obNext()">Next →</button></div>
+      </div>
+      <div class="ob-step" id="ob-3">
+        <div class="ob-icon">💭</div>
+        <div class="ob-h">How they communicate</div>
+        <div class="ob-p">Select all that apply — shapes the AI twin's voice.</div>
+        <div class="persona-chips" id="persona-chips">
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Warm &amp; affectionate</div>
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Direct &amp; practical</div>
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Humorous &amp; playful</div>
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Spiritual &amp; reflective</div>
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Reserved &amp; private</div>
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Optimistic &amp; upbeat</div>
+          <div class="persona-chip" onclick="this.classList.toggle('on')">Expressive &amp; emotional</div>
+        </div>
+        <div class="ob-label" style="margin-top:10px">Additional notes (optional)</div>
+        <input class="ob-input" id="ob-notes" placeholder="e.g. Loves cricket, very protective of family" />
+        <div class="ob-nav"><button class="ob-skip" onclick="obBack()">← Back</button><button class="ob-btn"
+            onclick="obNext()">Next →</button></div>
+      </div>
+      <div class="ob-step" id="ob-4">
+        <div class="ob-icon">🔊</div>
+        <div class="ob-h">Text-to-Speech Ready</div>
+        <div class="ob-p">EchoMind Ai uses the browser's built-in <strong style="color:var(--teal)">Web Speech
+            API</strong> to speak messages out loud — no recording needed.</div>
+        <div class="ob-p" style="font-size:11px;margin-top:4px">For higher-quality TTS, add a <strong>HuggingFace
+            Token</strong> on the next step (optional &amp; free).</div>
+        <div class="ob-nav" style="justify-content:center">
+          <button class="ob-btn" onclick="obNext()">Continue →</button>
+        </div>
+      </div>
+      <div class="ob-step" id="ob-5">
+        <div class="ob-icon">🔑</div>
+        <div class="ob-h">AI Power (optional)</div>
+        <div class="ob-label">Groq API Key — free AI features</div>
+        <input type="password" class="ob-input" id="ob-groq" placeholder="gsk_…" />
+        <div class="ob-p" style="font-size:11px">Free at <strong>console.groq.com</strong> — powers all AI suggestions
+        </div>
+        <div class="ob-label" style="margin-top:10px">HuggingFace Token — free high-quality TTS</div>
+        <input type="password" class="ob-input" id="ob-hf" placeholder="hf_…" />
+        <div class="ob-p" style="font-size:11px">Free at <strong>huggingface.co</strong> — better voice quality
+          (optional)</div>
+        <div class="ob-label" style="margin-top:10px">SOS Phone Number</div>
+        <input type="tel" class="ob-input" id="ob-sos-phone" placeholder="+91XXXXXXXXXX" />
+        <div class="ob-nav"><button class="ob-skip" onclick="obBack()">← Back</button><button class="ob-btn"
+            onclick="finishOnboarding()">Launch EchoMind Ai →</button></div>
+      </div>
+      <div class="ob-step" id="ob-6">
+        <div class="ob-icon">✦</div>
+        <div class="ob-h">AI Twin Ready</div>
+        <div class="twin-preview" id="twin-prev">
+          <div class="twin-name" id="prev-name">—</div>
+          <div class="twin-traits" id="prev-traits">—</div>
+          <div class="twin-sample" id="prev-sample">Generating…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN 3: CALIBRATION ══ -->
+  <div class="screen" id="s-calib">
+    <div class="calib-h">Eye &amp; Smile Calibration</div>
+    <div class="calib-p" id="calib-p">Step 1: Keep eyes open and look at camera naturally.</div>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <div class="calib-step-dot" id="cdot-0"></div>
+      <div class="calib-step-dot" id="cdot-1"></div>
+      <div class="calib-step-dot" id="cdot-2"></div>
+    </div>
+    <div class="cam-ring-wrap">
+      <video id="cv-calib" autoplay muted playsinline></video>
+      <div class="cam-overlay">
+        <svg class="calib-ring-svg" viewBox="0 0 72 72">
+          <circle class="cr-bg" cx="36" cy="36" r="30" />
+          <circle class="cr-fill" id="cr" cx="36" cy="36" r="30" />
+        </svg>
+        <div class="calib-readings">
+          <div class="ear-readout" id="ear-read">EAR: —</div>
+          <div class="smile-readout" id="smile-read">Smile: —</div>
+        </div>
+        <div class="calib-inst" id="calib-inst">Detecting face…</div>
+      </div>
+    </div>
+    <div class="calib-stat" id="calib-stat"></div>
+    <button class="calib-cta" id="done-btn" disabled onclick="finishCalib()">Calibration Complete ✓</button>
+    <span class="skip-link" style="margin-top:10px" onclick="skipCalib()">Skip — tap or Spacebar to blink</span>
+  </div>
+
+  <!-- ══ SCREEN 4: MAIN ══ -->
+  <div class="screen" id="s-main">
+    <header class="hdr">
+      <div class="hdr-logo"><img src="ic_launcher.png" class="hdr-logo-img" alt="" />EchoMind <em>Ai</em></div>
+      <div class="hdr-right">
+        <div class="cam-thumb"><video id="cv-main" autoplay muted playsinline></video>
+          <div class="cam-dot" id="cam-dot"></div>
+        </div>
+        <div class="sig-row">
+          <div class="sig-led" id="blink-led" title="Blink"></div>
+          <div class="sig-led" id="smile-led" title="Smile"></div>
+        </div>
+        <div class="icon-btn" id="ambient-btn" onclick="toggleAmbient()"
+          title="Ambient Listener — context-aware phrases">🎙</div>
+        <div class="icon-btn" onclick="openHelp()">?</div>
+        <div class="icon-btn" onclick="openSettings()">⚙</div>
+      </div>
+    </header>
+
+    <!-- Context banner -->
+    <div class="ctx-banner" id="ctx-banner">
+      <span>💬</span>
+      <span class="ctx-heard" id="ctx-heard">Listening…</span>
+      <span class="ctx-refresh" onclick="refreshAI()">↻</span>
+    </div>
+
+    <!-- Message area -->
+    <div class="msg-area">
+      <div class="msg-text" id="msg-text">
+        <span class="msg-ph" id="msg-ph">Select a phrase or type…</span>
+        <span id="msg-body"></span>
+        <span class="msg-cursor" id="msg-cur" style="display:none"></span>
+      </div>
+    </div>
+
+    <!-- Twin status + gesture hold bars -->
+    <div class="twin-bar">
+      <div class="twin-dot"></div>
+      <div class="twin-status" id="twin-status">AI twin ready — hold smile 5s = pause &nbsp;|&nbsp; hold eyes closed 10s
+        = 🆘 SOS</div>
+      <!-- Smile hold bar (gold) -->
+      <div class="smile-hold-bar">
+        <div class="smile-hold-fill" id="smile-hold-fill"></div>
+      </div>
+      <!-- SOS eye-hold bar (red) -->
+      <div class="sos-hold-bar">
+        <div class="sos-hold-fill" id="sos-hold-fill" style="width:0%;opacity:0"></div>
+      </div>
+    </div>
+
+    <div class="scan-bar-wrap">
+      <div class="scan-fill" id="main-scan-fill"></div>
+    </div>
+
+    <!-- Sug-bar -->
+    <div class="sug-bar" id="sug-bar">
+      <span class="sug-label">✨ AI</span>
+      <span class="sug-empty">Type to see suggestions…</span>
+    </div>
+
+    <!-- Tone bar -->
+    <div class="tone-bar">
+      <span class="tone-label">Tone</span>
+      <div class="tone-chip calm on" id="tone-calm" onclick="setTone('calm')">😌 Calm</div>
+      <div class="tone-chip warm" id="tone-warm" onclick="setTone('warm')">🤗 Warm</div>
+      <div class="tone-chip urgent" id="tone-urgent" onclick="setTone('urgent')">⚡ Urgent</div>
+      <div class="tone-chip play" id="tone-play" onclick="setTone('play')">😄 Play</div>
+      <span class="tone-reforming" id="tone-status"></span>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="main-tabs">
+      <div class="tab on" id="tab-phrases" onclick="setMode('phrases')"><span class="tab-ico">💬</span>PHRASE</div>
+      <div class="tab" id="tab-keyboard" onclick="setMode('keyboard')"><span class="tab-ico">⌨</span>KEYS</div>
+      <div class="tab emergency-tab" id="tab-emergency" onclick="setMode('emergency')"><span
+          class="tab-ico">🚨</span>EMERGENCY</div>
+    </div>
+
+    <!-- PHRASE Panel -->
+    <div class="panel on" id="panel-phrases">
+      <div id="phrases-grid"></div>
+    </div>
+
+    <!-- KEYBOARD Panel -->
+    <div class="panel" id="panel-keyboard">
+      <div class="kb-wrap" id="kb-wrap"></div>
+    </div>
+
+    <!-- EMERGENCY Panel -->
+    <div class="panel" id="panel-emergency">
+      <div class="emerg-panel">
+        <div class="emerg-sos-strip">
+          <button class="emerg-sos-btn" onclick="enterSOS()">🆘 SOS — Send Urgent Alert to Caregiver</button>
+        </div>
+        <div class="ph-row emerg-yn-row" id="emerg-yn-row">
+          <div class="yn-btn yes" data-text="Yes" onclick="speakImm('Yes')"><span class="yn-ico">✓</span><span
+              class="yn-lbl">YES</span></div>
+          <div class="yn-btn no" data-text="No" onclick="speakImm('No')"><span class="yn-ico">✗</span><span
+              class="yn-lbl">NO</span></div>
+        </div>
+        <div id="emerg-grid"></div>
+      </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bot-bar">
+      <button class="c-act" onclick="deleteLastChar()" title="Delete">⌫ Del</button>
+      <button class="c-act speak" onclick="speakMessage()" title="Speak composed text">🔊 Speak</button>
+      <button class="c-act" onclick="clearMessage()" title="Clear">🗑</button>
+      <button class="c-act" onclick="repeatSpeak()" title="Repeat last">↩</button>
+      <button class="c-act sos-btn" onclick="enterSOS()" title="SOS">🆘</button>
+    </div>
+  </div>
+
+  <!-- ══ SETTINGS MODAL ══ -->
+  <div class="modal-wrap" id="modal-settings">
+    <div class="modal-sheet">
+
+      <!-- Header -->
+      <div class="msh-header">
+        <div class="msh-icon">⚙</div>
+        <div>
+          <div class="msh-title">Settings</div>
+          <div class="msh-sub">EchoMind Ai · Personal Configuration</div>
+        </div>
+        <button class="msh-close-btn" onclick="closeSettings()" title="Save &amp; Close">✕</button>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="msh-tabs" role="tablist">
+        <button class="msh-tab on" onclick="mshTab(this,'mst-general')" role="tab">👤 General</button>
+        <button class="msh-tab" onclick="mshTab(this,'mst-voice')" role="tab">🔊 Voice</button>
+        <button class="msh-tab" onclick="mshTab(this,'mst-ai')" role="tab">✨ AI Keys</button>
+        <button class="msh-tab" onclick="mshTab(this,'mst-sos')" role="tab">🆘 Emergency</button>
+        <button class="msh-tab" onclick="mshTab(this,'mst-privacy')" role="tab">🛡 Privacy</button>
+      </div>
+
+      <!-- Body (scrollable) -->
+      <div class="msh-body">
+
+        <!-- ── General ── -->
+        <div class="msh-panel on" id="mst-general">
+          <div class="msh-field">
+            <label class="msh-lbl" for="inp-name">Patient Name</label>
+            <input type="text" id="inp-name" class="msh-input" placeholder="e.g. Arjun" autocomplete="off" />
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="sl-speed">Scan Speed <span class="msh-val" id="v-speed">1400 ms</span></label>
+            <input type="range" class="msh-range" min="600" max="3500" step="100" value="1400" id="sl-speed"
+              oninput="onSpeed(this.value)">
+            <div class="msh-range-labels"><span>Fast</span><span>Slow</span></div>
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="sl-sens">Blink Sensitivity <span class="msh-val"
+                id="v-sens">Medium</span></label>
+            <input type="range" class="msh-range" min="1" max="9" step="1" value="5" id="sl-sens"
+              oninput="onSens(this.value)">
+            <div class="msh-range-labels"><span>High</span><span>Low</span></div>
+          </div>
+          <div class="msh-action-row">
+            <button class="msh-action-btn" onclick="recalibrate()">↩ Recalibrate Eye Tracking</button>
+            <button class="msh-action-btn" onclick="startOnboarding()">↩ Redo Full Setup</button>
+          </div>
+        </div>
+
+        <!-- ── Voice ── -->
+        <div class="msh-panel" id="mst-voice">
+          <div class="msh-field">
+            <label class="msh-lbl" for="sl-rate">Speech Rate <span class="msh-val" id="v-rate">0.90×</span></label>
+            <input type="range" class="msh-range" min="0.4" max="1.5" step="0.05" value="0.9" id="sl-rate"
+              oninput="onRate(this.value)">
+            <div class="msh-range-labels"><span>Slow</span><span>Fast</span></div>
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="sel-voice">Voice Engine</label>
+            <select id="sel-voice" class="msh-input" onchange="CFG.voiceURI=this.value"></select>
+          </div>
+          <div class="msh-info-card">
+            <div class="msh-info-icon">💡</div>
+            <div>For higher quality TTS, add a <strong>HuggingFace Token</strong> in the AI Keys tab.</div>
+          </div>
+        </div>
+
+        <!-- ── AI Keys ── -->
+        <div class="msh-panel" id="mst-ai">
+          <div class="msh-info-card msh-info-blue">
+            <div class="msh-info-icon">🔐</div>
+            <div>API keys are <strong>AES-256 encrypted</strong> on this device. They are never sent to any server in
+              plain text.</div>
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="inp-groq">Groq API Key</label>
+            <div class="msh-input-wrap">
+              <input type="password" id="inp-groq" class="msh-input" placeholder="gsk_…" autocomplete="off" />
+              <button class="msh-eye-btn" onclick="togglePwd('inp-groq',this)" title="Show/hide">👁</button>
+            </div>
+            <div class="msh-hint">Free at <a href="https://console.groq.com" target="_blank"
+                rel="noopener">console.groq.com</a> — powers all AI suggestions</div>
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="inp-hf">HuggingFace Token</label>
+            <div class="msh-input-wrap">
+              <input type="password" id="inp-hf" class="msh-input" placeholder="hf_…" autocomplete="off" />
+              <button class="msh-eye-btn" onclick="togglePwd('inp-hf',this)" title="Show/hide">👁</button>
+            </div>
+            <div class="msh-hint">Free at <a href="https://huggingface.co" target="_blank"
+                rel="noopener">huggingface.co</a> — enables high-quality voice (optional)</div>
+          </div>
+        </div>
+
+        <!-- ── Emergency ── -->
+        <div class="msh-panel" id="mst-sos">
+          <div class="msh-info-card msh-info-red">
+            <div class="msh-info-icon">🆘</div>
+            <div>SOS sends an SMS with your location to the saved caregiver number immediately.</div>
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="inp-sos">Caregiver Phone Number</label>
+            <input type="tel" id="inp-sos" class="msh-input" placeholder="+91 XXXXX XXXXX" />
+          </div>
+          <div class="msh-field">
+            <label class="msh-lbl" for="inp-sos-msg">Emergency Message</label>
+            <input type="text" id="inp-sos-msg" class="msh-input" placeholder="I need help urgently" />
+          </div>
+          <div class="msh-action-row">
+            <button class="msh-action-btn danger" onclick="resetTwinData()">🗑 Reset AI Twin Data</button>
+          </div>
+        </div>
+
+        <!-- ── Privacy ── -->
+        <div class="msh-panel" id="mst-privacy">
+          <div id="prv-status" class="prv-status-panel">Loading…</div>
+          <div class="msh-info-card" style="margin-top:12px">
+            <div class="msh-info-icon">ℹ️</div>
+            <div><strong>Device-bound encryption:</strong> your data key is derived from this device's hardware
+              fingerprint. Even if someone copies localStorage, they cannot decrypt it on another device.</div>
+          </div>
+        </div>
+
+      </div><!-- /msh-body -->
+
+      <!-- Sticky footer -->
+      <div class="msh-footer">
+        <button class="msh-save-btn" onclick="closeSettings()">Save &amp; Close 🔐</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ HELP MODAL ══ -->
+  <div class="help-wrap" id="modal-help">
+    <div class="help-sheet">
+
+      <!-- Header -->
+      <div class="hlp-header">
+        <div>
+          <div class="hlp-title">EchoMind Ai — Help &amp; Guide</div>
+          <div class="hlp-sub">Everything you need to know · v10</div>
+        </div>
+        <button class="msh-close-btn" onclick="closeHelp()" title="Close">✕</button>
+      </div>
+
+      <!-- Single-scroll body -->
+      <div class="hlp-body">
+
+        <!-- Gesture table -->
+        <div class="hlp-gesture-table">
+          <div class="hlp-gt-title">Gestures</div>
+          <div class="hlp-gt-row"><span class="hlp-badge">Short blink</span><span>Select highlighted item</span></div>
+          <div class="hlp-gt-row"><span class="hlp-badge">Long blink</span><span>Go back · delete character</span></div>
+          <div class="hlp-gt-row"><span class="hlp-badge">Smile</span><span>Speak highlighted phrase</span></div>
+          <div class="hlp-gt-row"><span class="hlp-badge">Hold smile 5s 🟡</span><span>Pause · resume scanning</span>
+          </div>
+          <div class="hlp-gt-row hlp-gt-sos"><span class="hlp-badge-red">Hold eyes closed 10s 🔴</span><span>Trigger SOS
+              from any screen</span></div>
+        </div>
+
+        <!-- Quick cards row -->
+        <div class="hlp-card">
+          <div class="hlp-card-icon">💬</div>
+          <div class="hlp-card-body">
+            <div class="hlp-card-title">Phrases &amp; Keyboard</div>
+            <div class="hlp-row"><span class="hlp-dot teal"></span> Teal = ambient · <span
+                class="hlp-dot violet"></span> Violet = AI · <span class="hlp-dot white"></span> White = preset</div>
+            <div class="hlp-row">NAV row → switch between Phrases / Keyboard / Emergency</div>
+            <div class="hlp-row">In keyboard: type letters, tap <strong>✨ AI COMPLETE</strong>, then 🔊 SPEAK</div>
+          </div>
+        </div>
+
+        <div class="hlp-card">
+          <div class="hlp-card-icon">🎙</div>
+          <div class="hlp-card-body">
+            <div class="hlp-card-title">Ambient Listener</div>
+            <div class="hlp-row">Tap 🎙 → listens to caregiver speech → AI builds reply phrases instantly</div>
+          </div>
+        </div>
+
+        <!-- SOS setup card -->
+        <div class="hlp-card hlp-sos-activate-card">
+          <div class="hlp-card-icon">🆘</div>
+          <div class="hlp-card-body">
+            <div class="hlp-card-title">SOS — Setup &amp; Activation</div>
+            <div class="hlp-row"><strong>Setup:</strong> ⚙ Settings → Emergency tab → enter caregiver phone → Save.
+            </div>
+            <div class="hlp-row"><span class="hlp-badge-red">Activate</span> Hold eyes closed for <strong>10
+                seconds</strong> from any screen — red bar fills. Or blink-scan to Emergency → 🆘 SOS button.</div>
+            <div class="hlp-row">App fetches GPS location and opens SMS with Google Maps link. Repeats every 30s until
+              cancelled.</div>
+            <div class="hlp-row" style="color:var(--muted);font-size:11px">SMS works on mobile. On PC: message copied to
+              clipboard automatically.</div>
+          </div>
+        </div>
+
+        <!-- KB shortcuts -->
+        <div class="hlp-card">
+          <div class="hlp-card-icon">⌨</div>
+          <div class="hlp-card-body">
+            <div class="hlp-card-title">PC Keyboard Shortcuts</div>
+            <div class="hlp-row"><span class="hkey">Space</span> blink &nbsp; <span class="hkey">Backspace</span> long
+              blink &nbsp; <span class="hkey">F1</span> speak &nbsp; <span class="hkey">Esc</span> cancel SOS</div>
+          </div>
+        </div>
+
+      </div><!-- /hlp-body -->
+
+      <div class="hlp-footer">
+        <button class="msh-save-btn" onclick="closeHelp()">Got it ✓</button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script src="privacy.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>
